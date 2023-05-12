@@ -1,0 +1,9 @@
+#
+# brew install InstantClientTap/instantclient/instantclient-sqlplus
+# python3 -mpip install -r requirements.txt
+#
+
+pandas
+fastparquet
+pyspark=3.1.2
+boto3
