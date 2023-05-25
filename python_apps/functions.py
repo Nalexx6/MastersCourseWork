@@ -58,4 +58,6 @@ def join_test(jan: pd.DataFrame, feb: pd.DataFrame):
     jan.set_index(['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'], inplace=True)
     feb.set_index(['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'], inplace=True)
 
-    return jan.join(feb, lsuffix='jan', rsuffix='feb')
+    return jan.join(feb,
+                    on=['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'],
+                    how='outer', lsuffix='jan', rsuffix='feb')

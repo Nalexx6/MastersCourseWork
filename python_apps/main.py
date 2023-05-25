@@ -1,5 +1,6 @@
 import pandas as pd
 import logging
+import os
 from datetime import datetime
 import functions as fn
 
@@ -33,10 +34,12 @@ def add_date_cols(df):
 
 
 def read_df(path, ren=False):
+    root = ''
+
     if ren:
-        return add_date_cols(rename_columns(pd.read_parquet(path, engine='fastparquet')))
+        return add_date_cols(rename_columns(pd.read_parquet(os.path.join(root, path), engine='fastparquet')))
     else:
-        return add_date_cols(pd.read_parquet(path, engine='fastparquet'))
+        return add_date_cols(pd.read_parquet(os.path.join(root, path), engine='fastparquet'))
 
 
 if __name__ == "__main__":
@@ -99,8 +102,18 @@ if __name__ == "__main__":
 
     start = datetime.now()
 
-    print(fn.join_test(jan_data, feb_data).head())
+    joined = fn.join_test(jan_data, feb_data)
+    print(joined.shape[0])
 
-    logging.info(f'Calculation of top drop-off zones by hour took {datetime.now() - start}')
+    logging.info(f'Datasets join took {datetime.now() - start}')
 
     "============================================================================================================"
+
+    # start = datetime.now()
+    #
+    # joined.to_parquet('./test_python.parquet', engine='fastparquet')
+    #
+    # logging.info(f'File writing took took {datetime.now() - start}')
+
+    "============================================================================================================"
+
