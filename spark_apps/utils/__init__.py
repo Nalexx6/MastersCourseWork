@@ -13,19 +13,19 @@ def create_spark_session(app_name):
     # os.environ['JAVA_HOME'] = '$(/usr/libexec/java_home -v 1.8)'
 
     defaults = {
-        # 'spark.hadoop.fs.s3a.endpoint': config['s3']['endpoint'],
+        'spark.hadoop.fs.s3a.endpoint': 'http://s3.eu-west-1.amazonaws.com',
         # 'spark.sql.warehouse.dir': config['warehouse_location'],
         # 'master': "local[*]",
         'spark.sql.session.timeZone': 'UTC',
-        'spark.driver.extraLibraryPath': '/opt/hadoop/lib/native',
-        'spark.executor.extraLibraryPath': '/opt/hadoop/lib/native',
-        'spark.driver.extraJavaOptions': '-XX:+UseG1GC',
-        'spark.executor.extraJavaOptions': '-XX:+UseG1GC',
+        # 'spark.driver.extraLibraryPath': '/opt/hadoop/lib/native',
+        # 'spark.executor.extraLibraryPath': '/opt/hadoop/lib/native',
+        # 'spark.driver.extraJavaOptions': '-XX:+UseG1GC',
+        # 'spark.executor.extraJavaOptions': '-XX:+UseG1GC',
         # 'spark.sql.autoBroadcastJoinThreshold': -1,
-        'spark.executor.cores': '2',
-        'spark.executor.memory': '5g',
-        'spark.driver.memory': '5g',
-        'spark.driver.extraClassPath': '/home/moleksiienko/pyspark/*'
+        # 'spark.executor.cores': '2',
+        # 'spark.executor.memory': '5g',
+        # 'spark.driver.memory': '5g',
+        # 'spark.driver.extraClassPath': '/home/moleksiienko/pyspark/*'
 
     }
 
@@ -39,6 +39,13 @@ def create_spark_session(app_name):
         builder = builder.config(key, value)
 
     return builder.getOrCreate()
+
+
+def union_all(dfs):
+    if len(dfs) > 1:
+        return dfs[0].unionByName(union_all(dfs[1:]), allowMissingColumns=True)
+    else:
+        return dfs[0]
 
 
 def rename_cols(df: DataFrame):
