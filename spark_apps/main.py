@@ -64,11 +64,11 @@ def test_scale(files):
 
     "============================================================================================================"
 
-    # start = datetime.now()
-    #
-    # union.write.parquet(os.path.join(root, f'data/test-{len(files)}.parquet'))
-    # logging.info(f'File writing took took {datetime.now() - start}')
-    # perf_res['write'] = datetime.now() - start
+    start = datetime.now()
+
+    union.write.parquet(os.path.join(root, f'data/test-{len(files)}.parquet'))
+    logging.info(f'File writing took took {datetime.now() - start}')
+    perf_res['write'] = datetime.now() - start
 
     return perf_res
 
