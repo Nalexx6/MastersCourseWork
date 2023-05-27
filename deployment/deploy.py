@@ -30,9 +30,7 @@ if __name__ == "__main__":
     parser.add_argument('--s3-object-path', required=True)
 
     args = parser.parse_args()
-
     bucket = args.s3_bucket
-
     object_path = args.s3_object_path
 
     zipdir('spark_apps')
@@ -49,5 +47,4 @@ if __name__ == "__main__":
     for f in files:
         s3.upload_file(f, bucket, os.path.join(object_path, f'{os.path.basename(f)}'))
         logging.info(f'uploaded file {f}')
-
 
