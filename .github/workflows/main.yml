@@ -10,6 +10,10 @@ jobs:
     steps:
     - name: Check-out
       uses: actions/checkout@v3
+      
+    - name: prepare-env
+      run: pip3 install boto3 --user
+      shell: sh
 
     - name: deploy
       run: python3 deployment/deploy.py --s3-bucket ${{secrets.S3_BUCKET}} --s3-object-path ${{secrets.S3_OBJECT_PATH}}
