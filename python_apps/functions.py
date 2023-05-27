@@ -60,4 +60,4 @@ def join_test(jan: pd.DataFrame, feb: pd.DataFrame):
 
     return jan.join(feb,
                     on=['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'],
-                    how='outer', lsuffix='jan', rsuffix='feb')
+                    how='inner', lsuffix='_jan', rsuffix='_union')

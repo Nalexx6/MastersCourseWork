@@ -40,14 +40,14 @@ def get_step_status(client, cluster_id, step_id):
 
 
 def add_emr_step(client, cluster_id, bucket, job_type, executor_memory, executor_cores, driver_memory,
-                 driver_cores, executor_number, scale):
+                 driver_cores, executor_number, scale, local):
 
     script_path = os.path.join(bucket, 'emr-submit-spark.sh')
     python_modules_path = [
                             os.path.join(bucket, 'utils.zip'),
                           ]
 
-    spark_app_args = f'--scale {scale}'
+    spark_app_args = f'--scale {scale} --local {local}'
     spark_app_path = os.path.join(bucket, 'main.py')
 
     spark_job_params = f"""
@@ -102,7 +102,7 @@ def wait_for_step_to_finish(client, cluster_id, step_id):
 
 def execute_steps(cluster_id, job_type, bucket,
                   executor_memory, executor_cores, driver_memory,
-                  driver_cores, executor_number, scale):
+                  driver_cores, executor_number, scale, local):
 
     emr_client = boto3.client('emr')
 
@@ -121,7 +121,8 @@ def execute_steps(cluster_id, job_type, bucket,
             driver_memory=driver_memory,
             driver_cores=driver_cores,
             executor_number=executor_number,
-            scale=scale
+            scale=scale,
+            local=local
         )
     else:
         logging.info(
@@ -151,6 +152,7 @@ if __name__ == "__main__":
     parser.add_argument('--s3_bucket', required=True)
     parser.add_argument('--job_type', type=str, default='test')
     parser.add_argument('--scale', type=int, default=3)
+    parser.add_argument('--local', type=bool, default=False)
     parser.add_argument('--executor_memory', required=True)
     parser.add_argument('--executor_cores', required=True)
     parser.add_argument('--driver_memory', required=True)
@@ -168,5 +170,6 @@ if __name__ == "__main__":
         driver_memory=args.driver_memory,
         driver_cores=args.driver_cores,
         executor_number=args.executor_number,
-        scale=args.scale
+        scale=args.scale,
+        local=args.local
     )

@@ -1,6 +1,5 @@
 import logging
 import argparse
-import os.path
 from datetime import datetime
 
 import utils
@@ -23,7 +22,7 @@ def test_scale(files):
     union = utils.union_all(dfs)
     print(union.count())
 
-    # logging.info(f'Dataset union took {datetime.now() - start}')
+    logging.info(f'Dataset union took {datetime.now() - start}')
     perf_res['union'] = datetime.now() - start
 
     "============================================================================================================"
@@ -32,7 +31,7 @@ def test_scale(files):
 
     print(f"The average trip duration is: {utils.calc_avg_trip_duraiton(union)} minutes")
 
-    # logging.info(f'Calculation of mean trip duration took {datetime.now() - start}')
+    logging.info(f'Calculation of mean trip duration took {datetime.now() - start}')
     perf_res['average_trip_duration'] = datetime.now() - start
 
     "============================================================================================================"
@@ -62,22 +61,33 @@ def test_scale(files):
     logging.info(f'Calculation of top drop-off zones by hour took {datetime.now() - start}')
     perf_res['top_dropoff_zones_by_hour'] = datetime.now() - start
 
+    "============================================================================================================"
+
+    start = datetime.now()
+
+    utils.join_test(dfs[0], union).show()
+
+    logging.info(f'Calculation of top drop-off zones by hour took {datetime.now() - start}')
+    perf_res['join'] = datetime.now() - start
+
     return perf_res
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
-        description="medicare_age_65",
+        description="spark_test",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--scale", required=True)
+    parser.add_argument("--local", type=bool, default=False)
+
 
     args = parser.parse_args()
 
     test_res = {}
 
-    spark = utils.create_spark_session(app_name='test')
+    spark = utils.create_spark_session(app_name='test', local=args.local)
 
     files = ['fhvhv_tripdata_2023-01.parquet',
              'fhvhv_tripdata_2023-02.parquet',

@@ -47,15 +47,15 @@ if __name__ == "__main__":
 
     start = datetime.now()
 
-    jan_data = read_df('yellow_tripdata_2023-01.parquet', ren=True)
+    # jan_data = read_df('yellow_tripdata_2023-01.parquet', ren=True)
+    #
+    # # jan_data.to_csv('test.csv')
+    # feb_data = read_df('yellow_tripdata_2023-02.parquet', ren=True)
 
-    # jan_data.to_csv('test.csv')
-    feb_data = read_df('yellow_tripdata_2023-02.parquet', ren=True)
-
-    # jan_data = read_df('fhvhv_tripdata_2023-01.parquet')
-    # feb_data = read_df('fhvhv_tripdata_2023-02.parquet')
+    jan_data = read_df('fhvhv_tripdata_2023-01.parquet')
+    feb_data = read_df('fhvhv_tripdata_2023-02.parquet')
     # union = pd.read_parquet('fhvhv_tripdata_2023-01.parquet', engine='fastparquet')
-    print(jan_data.columns)
+    # print(jan_data.columns)
 
     logging.info(f'Dataset reading took {datetime.now() - start}')
 
@@ -103,18 +103,11 @@ if __name__ == "__main__":
 
     start = datetime.now()
 
-    joined = fn.join_test(jan_data, feb_data)
-    print(joined.shape[0])
+    joined = fn.join_test(jan_data, union)
+    print(joined.head(10))
 
     logging.info(f'Datasets join took {datetime.now() - start}')
 
     "============================================================================================================"
 
-    start = datetime.now()
-
-    joined.to_parquet('./test_python.parquet', engine='fastparquet')
-
-    logging.info(f'File writing took took {datetime.now() - start}')
-
-    "============================================================================================================"
 

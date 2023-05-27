@@ -8,12 +8,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pyspark.sql import SparkSession, DataFrame, Window
 
 
-def create_spark_session(app_name):
+def create_spark_session(app_name, local=False):
     defaults = {
         'spark.hadoop.fs.s3a.endpoint': 'http://s3.eu-west-1.amazonaws.com',
         'spark.sql.session.timeZone': 'UTC',
         'spark.default.parallelism': 20,
     }
+
+    if local:
+        defaults['master'] = 'local'
 
     builder = (SparkSession
         .builder
