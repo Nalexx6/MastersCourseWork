@@ -33,14 +33,14 @@ if __name__ == "__main__":
     bucket = args.s3_bucket
     object_path = args.s3_object_path
 
-    zipdir('spark_apps')
+    zipdir('spark_apps/utils')
 
     files = [
              './spark_apps/main.py',
              './deployment/bootstrap.sh',
              './deployment/script-runner.jar',
              './deployment/emr-submit-spark.sh',
-             './spark_apps.zip']
+             './utils.zip']
 
     s3 = boto3.client(service_name='s3')
 
