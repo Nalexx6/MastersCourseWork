@@ -9,30 +9,15 @@ from pyspark.sql import SparkSession, DataFrame, Window
 
 
 def create_spark_session(app_name):
-
-    # os.environ['JAVA_HOME'] = '$(/usr/libexec/java_home -v 1.8)'
-
     defaults = {
         'spark.hadoop.fs.s3a.endpoint': 'http://s3.eu-west-1.amazonaws.com',
-        # 'spark.sql.warehouse.dir': config['warehouse_location'],
-        # 'master': "local[*]",
         'spark.sql.session.timeZone': 'UTC',
-        # 'spark.driver.extraLibraryPath': '/opt/hadoop/lib/native',
-        # 'spark.executor.extraLibraryPath': '/opt/hadoop/lib/native',
-        # 'spark.driver.extraJavaOptions': '-XX:+UseG1GC',
-        # 'spark.executor.extraJavaOptions': '-XX:+UseG1GC',
-        # 'spark.sql.autoBroadcastJoinThreshold': -1,
-        # 'spark.executor.cores': '2',
-        # 'spark.executor.memory': '5g',
-        # 'spark.driver.memory': '5g',
-        # 'spark.driver.extraClassPath': '/home/moleksiienko/pyspark/*'
-
+        'spark.default.parallelism': 20,
     }
 
     builder = (SparkSession
         .builder
         .appName(app_name)
-        .master('local')
     )
 
     for key, value in {**defaults}.items():

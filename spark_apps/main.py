@@ -1,5 +1,6 @@
 import logging
 import argparse
+import os.path
 from datetime import datetime
 
 import utils
@@ -61,6 +62,14 @@ def test_scale(files):
     logging.info(f'Calculation of top drop-off zones by hour took {datetime.now() - start}')
     perf_res['top_dropoff_zones_by_hour'] = datetime.now() - start
 
+    "============================================================================================================"
+
+    start = datetime.now()
+
+    union.write.parquet(os.path.join(root, f'data/test-{len(files)}.parquet'))
+    logging.info(f'File writing took took {datetime.now() - start}')
+    perf_res['write'] = datetime.now() - start
+
     return perf_res
 
 
@@ -95,25 +104,6 @@ if __name__ == "__main__":
 
     for s in range(2, int(args.scale) + 1):
         test_res[s] = test_scale(files[:s])
-
-    "============================================================================================================"
-    #
-    # start = datetime.now()
-    #
-    # joined = utils.join_test(jan_data, feb_data)
-    # print(joined.count())
-    #
-    # logging.info(f'Datasets join took {datetime.now() - start}')
-
-    "============================================================================================================"
-
-    # start = datetime.now()
-    #
-    # joined.to_parquet('./test_python.parquet', engine='fastparquet')
-    #
-    # logging.info(f'File writing took took {datetime.now() - start}')
-
-    "============================================================================================================"
 
     for k, v in test_res.items():
         logging.info(f'============================== Results for scale {k} ======================================')

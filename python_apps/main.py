@@ -41,7 +41,6 @@ def read_df(path, ren=False):
     else:
         return add_date_cols(pd.read_parquet(os.path.join(root, path), engine='fastparquet'))
 
-
 if __name__ == "__main__":
 
     "============================================================================================================"
@@ -49,8 +48,10 @@ if __name__ == "__main__":
     start = datetime.now()
 
     jan_data = read_df('yellow_tripdata_2023-01.parquet', ren=True)
+
+    # jan_data.to_csv('test.csv')
     feb_data = read_df('yellow_tripdata_2023-02.parquet', ren=True)
-    
+
     # jan_data = read_df('fhvhv_tripdata_2023-01.parquet')
     # feb_data = read_df('fhvhv_tripdata_2023-02.parquet')
     # union = pd.read_parquet('fhvhv_tripdata_2023-01.parquet', engine='fastparquet')
@@ -109,11 +110,11 @@ if __name__ == "__main__":
 
     "============================================================================================================"
 
-    # start = datetime.now()
-    #
-    # joined.to_parquet('./test_python.parquet', engine='fastparquet')
-    #
-    # logging.info(f'File writing took took {datetime.now() - start}')
+    start = datetime.now()
+
+    joined.to_parquet('./test_python.parquet', engine='fastparquet')
+
+    logging.info(f'File writing took took {datetime.now() - start}')
 
     "============================================================================================================"
 
