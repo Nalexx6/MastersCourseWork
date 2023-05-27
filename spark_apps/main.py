@@ -107,7 +107,12 @@ if __name__ == "__main__":
     for s in range(2, int(args.scale) + 1):
         test_res[s] = test_scale(files[:s])
 
+    # for k, v in test_res.items():
+    #     logging.info(f'============================== Results for scale {k} ======================================')
+    #     for k1, v1 in v.items():
+    #         logging.info(f'{k1} operation took {v1} seconds')
+
     for k, v in test_res.items():
         logging.info(f'============================== Results for scale {k} ======================================')
         for k1, v1 in v.items():
-            logging.info(f'{k1} operation took {v1} seconds')
+            print(v1)
