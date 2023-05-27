@@ -94,6 +94,6 @@ def top_dropoff_zones_by_hour(df):
     return ranked_trips.filter(ranked_trips.rank == 1)
 
 
-def join_test(jan, feb):
-    return (jan.join(feb, on=['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'], how='outer')
+def join_test(df1, df2):
+    return (df1.join(df2, on=['hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'], how='inner')
             .selectExpr('hvfhs_license_num', 'pickup_day', 'pickup_hour', 'pickup_day_of_week'))

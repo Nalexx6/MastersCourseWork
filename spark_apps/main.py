@@ -62,14 +62,6 @@ def test_scale(files):
     logging.info(f'Calculation of top drop-off zones by hour took {datetime.now() - start}')
     perf_res['top_dropoff_zones_by_hour'] = datetime.now() - start
 
-    "============================================================================================================"
-
-    start = datetime.now()
-
-    union.write.parquet(os.path.join(root, f'data/test-{len(files)}.parquet'))
-    logging.info(f'File writing took took {datetime.now() - start}')
-    perf_res['write'] = datetime.now() - start
-
     return perf_res
 
 
