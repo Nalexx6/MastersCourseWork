@@ -38,7 +38,6 @@ if __name__ == "__main__":
     files = [
              './spark_apps/main.py',
              './deployment/bootstrap.sh',
-             './deployment/script-runner.jar',
              './deployment/emr-submit-spark.sh',
              './utils.zip']
 
