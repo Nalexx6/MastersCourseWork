@@ -16,7 +16,7 @@ def create_spark_session(app_name, local=False):
     }
 
     if local:
-        defaults['master'] = 'local'
+        defaults['master'] = 'local[*]'
 
     builder = (SparkSession
         .builder
