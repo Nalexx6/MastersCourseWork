@@ -9,10 +9,17 @@ from pyspark.sql import SparkSession, DataFrame, Window
 
 
 def create_spark_session(app_name, local=False):
+
+    packages = [
+        'org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1',
+        'org.apache.kafka:kafka-clients:2.8.0'
+    ]
+
     defaults = {
         'spark.hadoop.fs.s3a.endpoint': 'http://s3.eu-west-1.amazonaws.com',
         'spark.sql.session.timeZone': 'UTC',
         'spark.default.parallelism': 20,
+        "spark.jars.packages": ",".join(packages),
     }
 
     if local:
