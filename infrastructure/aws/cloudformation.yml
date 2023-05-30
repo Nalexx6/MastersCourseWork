@@ -69,7 +69,7 @@ Resources:
       DBInstanceClass: db.t3.micro
       EngineVersion: 12.8
       MasterUsername: postgres
-      MasterUserPassword: Qq1234567
+      MasterUserPassword: <pass>
       VPCSecurityGroups:
         - !GetAtt SecurityGroup.GroupId
       AvailabilityZone: eu-west-1a
