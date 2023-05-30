@@ -36,7 +36,8 @@ if __name__ == "__main__":
     zipdir('spark_apps/utils')
 
     files = [
-             './spark_apps/main.py',
+             './spark_apps/streaming.py',
+             './spark_apps/batch.py',
              './deployment/bootstrap.sh',
              './deployment/emr-submit-spark.sh',
              './utils.zip']

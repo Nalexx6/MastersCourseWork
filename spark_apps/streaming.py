@@ -4,7 +4,6 @@ import logging
 import os
 import utils
 
-
 import pyspark.sql.functions as fn
 from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
 from pyspark.sql import DataFrame
@@ -20,10 +19,10 @@ class Writer:
     def __call__(self, df: DataFrame, epoch_id):
         output_table = os.path.join(config['root'], config['output_table'])
 
-        df = (df.where(df.value.isNotNull())
+        df = utils.add_date_cols((df.where(df.value.isNotNull())
                 .select(fn.from_json(fn.col("value").cast("string"), self.config['schema']).alias("value"))
                 .select('value.*')
-                )
+                ))
 
         (df.write.partitionBy(config['partition_key'])
             .mode('append')
