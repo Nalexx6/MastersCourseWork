@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  AllowedIP:
+    Type: String
+    Description: Allowed IP address to access the EC2 instances
+    Default: 0.0.0.0/0
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: nalexx-bucket-1
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: nalexx-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: nalexx-igw
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: eu-west-1a
+      Tags:
+        - Key: Name
+          Value: nalexx-subnet
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: nalexx-ec2-sg
+      GroupDescription: Security group for the EC2 instances and EMR clusters
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Ref AllowedIP
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      DBInstanceIdentifier: nalexx-rds
+      DBName: nalexxrds
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      EngineVersion: 12.8
+      MasterUsername: postgres
+      MasterUserPassword: Qq1234567
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroup.GroupId
+      AvailabilityZone: eu-west-1a
+      PubliclyAccessible: false
+      MultiAZ: false
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: emr-pair
+      ImageId: ami-04f7efe62f419d9f5
+      SubnetId: !Ref Subnet
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      Tags:
+        - Key: Name
+          Value: nalexx-ec2
+
+  EMRCluster1:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Name: EMRCluster1
+      ReleaseLabel: emr-6.7.0
+      Applications:
+        - Name: Spark
+        - Name: Hadoop
+        - Name: Zeppelin
+      Instances:
+          CoreInstanceGroup:
+            InstanceRole: CORE
+            InstanceType: m4.large
+            InstanceCount: 1
+            Market: ON_DEMAND
+          MasterInstanceGroup:
+            InstanceRole: MASTER
+            InstanceType: m4.large
+            InstanceCount: 1
+            Market: ON_DEMAND
+      TerminationProtected: false
+      Ec2KeyName: emr-pair
+      KeepJobFlowAliveWhenNoSteps: true
+
+  EMRCluster2:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Name: EMRCluster2
+      ReleaseLabel: emr-6.7.0
+      Applications:
+        - Name: Spark
+        - Name: Hadoop
+        - Name: Zeppelin
+      Instances:
+          CoreInstanceGroup:
+            InstanceRole: CORE
+            InstanceType: m4.large
+            InstanceCount: 1
+            Market: ON_DEMAND
+          MasterInstanceGroup:
+            InstanceRole: MASTER
+            InstanceType: m4.large
+            InstanceCount: 1
+            Market: ON_DEMAND
+      TerminationProtected: false
+      Ec2KeyName: emr-pair
+      KeepJobFlowAliveWhenNoSteps: true
+      EmrManagedMasterSecurityGroup: !GetAtt SecurityGroup.GroupId
+      EmrManagedSlaveSecurityGroup: !GetAtt SecurityGroup.GroupId
+
+Outputs:
+  S3BucketName:
+    Value: !Ref S3Bucket
