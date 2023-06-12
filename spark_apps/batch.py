@@ -6,8 +6,6 @@ import metrics
 
 logging.basicConfig(format='%(asctime)s: %(levelname)s: %(module)s: %(message)s', level=logging.INFO)
 
-from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
-
 
 def update_metrics(spark, config):
 
@@ -17,22 +15,22 @@ def update_metrics(spark, config):
     zones = spark.read.csv(os.path.join(config['root'], config['zones_table']), header=True)
 
     logging.info('Updating totals by pickup location')
-    utils.save_metrics(metrics.total_by_pickup_loc(df, zones), 'trips_by_pickup_locations')
+    utils.save_metrics(metrics.total_by_pickup_loc(df, zones), config, 'trips_by_pickup_locations')
 
     logging.info('Updating totals by dropoff location')
-    utils.save_metrics(metrics.total_by_dropoff_loc(df, zones), 'trips_by_dropoff_locations')
+    utils.save_metrics(metrics.total_by_dropoff_loc(df, zones), config, 'trips_by_dropoff_locations')
 
     logging.info('Updating top licenses by an hour')
-    utils.save_metrics(metrics.top_licenses_by_hour(df, licenses), 'top_licenses_by_hour')
+    utils.save_metrics(metrics.top_licenses_by_hour(df, licenses), config, 'top_licenses_by_hour')
 
     logging.info('Updating average tip by trip distance')
-    utils.save_metrics(metrics.avg_tip_by_trip_distance(df), 'avg_tip_by_trip_distance')
+    utils.save_metrics(metrics.avg_tip_by_trip_distance(df), config, 'avg_tip_by_trip_distance')
 
     logging.info('Updating average tip by trip duration')
-    utils.save_metrics(metrics.avg_tip_by_trip_duration(df), 'avg_tip_by_trip_duration')
+    utils.save_metrics(metrics.avg_tip_by_trip_duration(df), config, 'avg_tip_by_trip_duration')
 
     logging.info('Updating average tip by trip speed')
-    utils.save_metrics(metrics.avg_tip_by_trip_speed(df), 'avg_tip_by_trip_speed')
+    utils.save_metrics(metrics.avg_tip_by_trip_speed(df), config, 'avg_tip_by_trip_speed')
 
     logging.info('Data update finished')
 
@@ -43,45 +41,16 @@ if __name__ == "__main__":
         description="spark_test",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+
+    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument('--db-url', type=str, required=True)
+    parser.add_argument('--db-pass', type=str, required=True)
     parser.add_argument("--local", type=bool, default=False)
 
     args = parser.parse_args()
+    config_path = os.path.join(os.path.dirname(__file__), args.config)
 
     spark = utils.create_spark_session(app_name='batch', local=args.local)
-
-    config = {
-        'kafka_brokers': ['localhost:9092'],
-        'topics': ['data-topic'],
-        'root': '',
-        'checkpoint_location': 'nalexx-bucket/data/checkpoint',
-        'output_table': 'fhvhv_tripdata_2023-01.parquet',
-        'licences_table': 'licenses.csv',
-        'zones_table': 'zones.csv',
-        'partition_key': 'hvfhs_license_num',
-        'schema': StructType([StructField('hvfhs_license_num', StringType()),
-                 StructField('dispatching_base_num', StringType()),
-                 StructField('originating_base_num', StringType()),
-                 StructField('request_datetime', DateType()),
-                 StructField('on_scene_datetime', DateType()),
-                 StructField('pickup_datetime', DateType()),
-                 StructField('dropoff_datetime', DateType()),
-                 StructField('PULocationID', IntegerType()),
-                 StructField('DOLocationID', IntegerType()),
-                 StructField('trip_miles', DecimalType()),
-                 StructField('trip_time', IntegerType()),
-                 StructField('base_passenger_fare', DecimalType()),
-                 StructField('tolls', DecimalType()),
-                 StructField('bcf', DecimalType()),
-                 StructField('sales_tax', DecimalType()),
-                 StructField('congestion_surcharge', DecimalType()),
-                 StructField('airport_fee', DecimalType()),
-                 StructField('tips', DecimalType()),
-                 StructField('driver_pay', DecimalType()),
-                 StructField('shared_request_flag', StringType()),
-                 StructField('shared_match_flag', StringType()),
-                 StructField('access_a_ride_flag', StringType()),
-                 StructField('wav_request_flag', StringType()),
-                 StructField('wav_match_flag', StringType())])
-    }
+    config = utils.load_config(config_path, args.db_url, args.db_pass)
 
     update_metrics(spark, config)

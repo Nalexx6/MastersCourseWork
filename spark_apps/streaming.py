@@ -5,7 +5,6 @@ import os
 import utils
 
 import pyspark.sql.functions as fn
-from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
 from pyspark.sql import DataFrame
 
 logging.basicConfig(format='%(asctime)s: %(levelname)s: %(module)s: %(message)s', level=logging.INFO)
@@ -73,53 +72,14 @@ if __name__ == '__main__':
         description='new trips streaming processor',
     )
 
+    parser.add_argument("--config", type=str, required=True)
     parser.add_argument('--trigger_once', action='store_true')
+    parser.add_argument("--local", type=bool, default=False)
+
     args = parser.parse_args()
+    config_path = os.path.join(os.path.dirname(__file__), args.config)
 
-    # config_path = os.path.join(os.path.dirname(__file__), args.config)
-    # config = apps.load_confg(
-    #     config_path, db_name=args.db_name, db_type=args.db_type,
-    # )
-
-    config = {
-        'kafka_brokers': ['52.212.78.62:9092'],
-        'topics': ['data_topic'],
-        'root': 'nalexx-bucket/data/storage',
-        'checkpoint_location': 'nalexx-bucket/data/checkpoint',
-        'output_table': 'nyc-trip-data.parquet',
-        'licences_table': 'licenses.csv',
-        'zones_table': 'zones.csv',
-        'partition_key': 'Hvfhs_license_num',
-        'schema': StructType([StructField('hvfhs_license_num', StringType()),
-                 StructField('dispatching_base_num', StringType()),
-                 StructField('originating_base_num', StringType()),
-                 StructField('request_datetime', DateType()),
-                 StructField('on_scene_datetime', DateType()),
-                 StructField('pickup_datetime', DateType()),
-                 StructField('dropoff_datetime', DateType()),
-                 StructField('PULocationID', IntegerType()),
-                 StructField('DOLocationID', IntegerType()),
-                 StructField('trip_miles', DecimalType()),
-                 StructField('trip_time', IntegerType()),
-                 StructField('base_passenger_fare', DecimalType()),
-                 StructField('tolls', DecimalType()),
-                 StructField('bcf', DecimalType()),
-                 StructField('sales_tax', DecimalType()),
-                 StructField('congestion_surcharge', DecimalType()),
-                 StructField('airport_fee', DecimalType()),
-                 StructField('tips', DecimalType()),
-                 StructField('driver_pay', DecimalType()),
-                 StructField('shared_request_flag', StringType()),
-                 StructField('shared_match_flag', StringType()),
-                 StructField('access_a_ride_flag', StringType()),
-                 StructField('wav_request_flag', StringType()),
-                 StructField('wav_match_flag', StringType())])
-    }
-
-    spark_job_name = "streaming"
-
-    spark = utils.create_spark_session(
-        spark_job_name
-    )
+    spark = utils.create_spark_session(app_name='streaming', local=args.local)
+    config = utils.load_config(config_path)
 
     run_streaming(config, args, spark)
