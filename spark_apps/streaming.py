@@ -74,7 +74,6 @@ if __name__ == '__main__':
 
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument('--trigger_once', action='store_true')
-    parser.add_argument("--local", type=bool, default=False)
 
     args = parser.parse_args()
     config_path = os.path.join(os.path.dirname(__file__), args.config)
