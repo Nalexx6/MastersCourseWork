@@ -8,7 +8,7 @@ import pyspark.sql.functions as fn
 from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
 from pyspark.sql import DataFrame
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='%(asctime)s: %(levelname)s: %(module)s: %(message)s', level=logging.INFO)
 
 
 class Writer:
@@ -27,6 +27,8 @@ class Writer:
         (df.write.partitionBy(config['partition_key'])
             .mode('append')
             .parquet(output_table))
+
+        logging.info(f'Data was updated in {output_table}')
 
 
 def run_streaming(config, args, spark):
@@ -62,8 +64,8 @@ def run_streaming(config, args, spark):
         .awaitTermination()
     )
 
-    # if trigger_once:
-    #     stream.awaitTermination()
+    if trigger_once:
+        stream.awaitTermination()
 
 
 if __name__ == '__main__':
@@ -80,12 +82,14 @@ if __name__ == '__main__':
     # )
 
     config = {
-        'kafka_brokers': ['localhost:9092'],
-        'topics': ['data-topic'],
-        'root': '',
+        'kafka_brokers': ['52.212.78.62:9092'],
+        'topics': ['data_topic'],
+        'root': 'nalexx-bucket/data/storage',
         'checkpoint_location': 'nalexx-bucket/data/checkpoint',
-        'output_table': 'nyc_trip_data.parquet',
-        'partition_key': 'hvfhs_license_num',
+        'output_table': 'nyc-trip-data.parquet',
+        'licences_table': 'licenses.csv',
+        'zones_table': 'zones.csv',
+        'partition_key': 'Hvfhs_license_num',
         'schema': StructType([StructField('hvfhs_license_num', StringType()),
                  StructField('dispatching_base_num', StringType()),
                  StructField('originating_base_num', StringType()),
