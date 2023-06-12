@@ -40,7 +40,9 @@ if __name__ == "__main__":
              './spark_apps/batch.py',
              './deployment/bootstrap.sh',
              './deployment/emr-submit-spark.sh',
-             './utils.zip']
+             './utils.zip',
+             './nyc_taxi_metadata/licenses.csv',
+             './nyc_taxi_metadata/zones.csv']
 
     s3 = boto3.client(service_name='s3')
 
