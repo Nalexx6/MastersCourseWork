@@ -49,7 +49,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config_path = os.path.join(os.path.dirname(__file__), args.config)
 
-    spark = utils.create_spark_session(app_name='batch', local=args.local)
+    spark = utils.create_spark_session(app_name='batch')
     config = utils.load_config(config_path, args.db_url, args.db_pass)
 
     update_metrics(spark, config)
