@@ -1,5 +1,8 @@
 import sys
 import os
+import yaml
+
+from yaml import Loader
 from pyspark.sql import functions as fn
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -8,7 +11,7 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
 
 
-def create_spark_session(app_name, local=False):
+def create_spark_session(app_name, local=True):
 
     packages = [
         'org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1',
@@ -42,47 +45,43 @@ def create_spark_session(app_name, local=False):
 
 
 def parse_df_schema(config):
-    pass
+    type_mapping = {
+        'str': StringType(),
+        'date': DateType(),
+        'int': IntegerType(),
+        'decimal': DecimalType(11, 2),
+
+    }
+
+    fields = []
+
+    for f in config['schema']:
+        fields.append(StructField(f['field_name'], type_mapping[f['type']].__class__()))
+
+    return StructType(fields)
 
 
-def load_config(config_path, db_url=None, db_pass=None):
+def load_yaml(path):
+    with open(path) as f:
+        data = yaml.load(f, Loader=Loader)
+    return data
 
-    config = {
-        'kafka_brokers': ['localhost:9092'],
-        'topics': ['data-topic'],
-        'root': 'nalexx-bucket/data/storage',
-        'checkpoint_location': 'nalexx-bucket/data/checkpoint',
-        'licences_table': 'licenses.csv',
-        'zones_table': 'zones.csv',
-        'partition_key': 'hvfhs_license_num',
 
+def load_config(path, db_url=None, db_pass=None):
+
+    config_params = load_yaml(path)
+
+    print(config_params)
+
+    db_params = {
         'db_pass': db_pass,
         'db_url': db_url,
+    }
 
-        'schema': StructType([StructField('hvfhs_license_num', StringType()),
-                 StructField('dispatching_base_num', StringType()),
-                 StructField('originating_base_num', StringType()),
-                 StructField('request_datetime', DateType()),
-                 StructField('on_scene_datetime', DateType()),
-                 StructField('pickup_datetime', DateType()),
-                 StructField('dropoff_datetime', DateType()),
-                 StructField('PULocationID', IntegerType()),
-                 StructField('DOLocationID', IntegerType()),
-                 StructField('trip_miles', DecimalType()),
-                 StructField('trip_time', IntegerType()),
-                 StructField('base_passenger_fare', DecimalType()),
-                 StructField('tolls', DecimalType()),
-                 StructField('bcf', DecimalType()),
-                 StructField('sales_tax', DecimalType()),
-                 StructField('congestion_surcharge', DecimalType()),
-                 StructField('airport_fee', DecimalType()),
-                 StructField('tips', DecimalType()),
-                 StructField('driver_pay', DecimalType()),
-                 StructField('shared_request_flag', StringType()),
-                 StructField('shared_match_flag', StringType()),
-                 StructField('access_a_ride_flag', StringType()),
-                 StructField('wav_request_flag', StringType()),
-                 StructField('wav_match_flag', StringType())])
+    config = {
+        **config_params,
+        **db_params,
+        'schema': parse_df_schema(config_params)
     }
 
     return config

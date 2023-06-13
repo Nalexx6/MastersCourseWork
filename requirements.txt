@@ -7,3 +7,4 @@ pandas
 fastparquet
 pyspark==3.2.1
 boto3
+yaml
