@@ -11,7 +11,7 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import StringType, StructType, StructField, DateType, IntegerType, DecimalType
 
 
-def create_spark_session(app_name, local=True):
+def create_spark_session(app_name, local=False):
 
     packages = [
         'org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1',
