@@ -23,8 +23,9 @@ jobs:
           sudo yum install -y git
           sudo yum install -y docker
           sudo systemctl start docker
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+          sudo mkdir -p /usr/local/lib/docker/cli-plugins
+          sudo curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+          sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
           git clone https://github.com/Nalexx6/Diploma.git
           cd Diploma/infrastructure/kafka
           sudo docker compose up -d
