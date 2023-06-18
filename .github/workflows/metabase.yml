@@ -21,5 +21,6 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           sudo yum install -y docker
+          sudo systemctl start docker
           sudo docker run -d -p 3000:3000 --name metabase metabase/metabase
 
