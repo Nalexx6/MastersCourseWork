@@ -11,9 +11,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Docker pull and run on EC2
+    - name: Git pull and run Docker on EC2
       id: deploy
-      uses: appleboy/ssh-action@master;
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.KAFKA_EC2_HOST }}
         username: ec2-user
