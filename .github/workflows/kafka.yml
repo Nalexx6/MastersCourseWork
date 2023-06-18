@@ -11,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Git pull and run Docker on EC2
+    - name: Docker pull and run on EC2
       id: deploy
       uses: appleboy/ssh-action@master;
       with:
