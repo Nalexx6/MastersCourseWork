@@ -93,17 +93,17 @@ Resources:
       DBInstanceIdentifier: nalexx-rds
       DBName: nalexxrds
       AllocatedStorage: 20
-      DBInstanceClass: db.t3.micro
+      DBInstanceClass: !Ref DBInstanceClass
       EngineVersion: 12.8
       MasterUsername: postgres
       MasterUserPassword: <pass>
       VPCSecurityGroups:
         - !GetAtt SecurityGroup.GroupId
-      AvailabilityZone: eu-west-1a
+      AvailabilityZone: eu-west-1
       PubliclyAccessible: false
       MultiAZ: false
 
-  EC2Instance:
+  KafkaEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
@@ -111,15 +111,28 @@ Resources:
       ImageId: ami-04f7efe62f419d9f5
       SubnetId: !Ref Subnet
       SecurityGroupIds:
-        - !Ref SecurityGroup
+        - !Ref SecurityGroup.GroupId
       Tags:
         - Key: Name
-          Value: nalexx-ec2
+          Value: kafka
+
+  MetabaseEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: emr-pair
+      ImageId: ami-04f7efe62f419d9f5
+      SubnetId: !Ref Subnet
+      SecurityGroupIds:
+        - !Ref SecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: metabase
 
   EMRCluster1:
     Type: AWS::EMR::Cluster
     Properties:
-      Name: EMRCluster1
+      Name: !Ref EMRClusterName
       ReleaseLabel: emr-6.7.0
       Applications:
         - Name: Spark
@@ -128,8 +141,8 @@ Resources:
       Instances:
           CoreInstanceGroup:
             InstanceRole: CORE
-            InstanceType: m4.large
-            InstanceCount: 1
+            InstanceType: !Ref EMRClusterInstanceType
+            InstanceCount: !Ref EMRCoreNodesCount
             Market: ON_DEMAND
           MasterInstanceGroup:
             InstanceRole: MASTER
@@ -139,11 +152,13 @@ Resources:
       TerminationProtected: false
       Ec2KeyName: emr-pair
       KeepJobFlowAliveWhenNoSteps: true
+      EmrManagedMasterSecurityGroup: !GetAtt SecurityGroup.GroupId
+      EmrManagedSlaveSecurityGroup: !GetAtt SecurityGroup.GroupId
 
   EMRCluster2:
     Type: AWS::EMR::Cluster
     Properties:
-      Name: EMRCluster2
+      Name: !Ref EMRCluster2Name
       ReleaseLabel: emr-6.7.0
       Applications:
         - Name: Spark
@@ -152,8 +167,8 @@ Resources:
       Instances:
           CoreInstanceGroup:
             InstanceRole: CORE
-            InstanceType: m4.large
-            InstanceCount: 1
+            InstanceType: !Ref EMRClusterInstanceType
+            InstanceCount: !Ref EMRCoreNodesCount
             Market: ON_DEMAND
           MasterInstanceGroup:
             InstanceRole: MASTER
