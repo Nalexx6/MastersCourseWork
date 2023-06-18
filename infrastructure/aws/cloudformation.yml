@@ -4,6 +4,33 @@ Parameters:
     Type: String
     Description: Allowed IP address to access the EC2 instances
     Default: 0.0.0.0/0
+  EC2InstanceType:
+    Type: String
+    Description: EC2 instance type for the EC2 instance
+  EC2InstanceName:
+    Type: String
+    Description: Name for the EC2 instance
+  EMRReleaseLabel:
+    Type: String
+    Description: EMR release label for the EMR clusters
+  EMRCluster1Name:
+    Type: String
+    Description: Name for EMR Cluster 1
+  EMRCluster2Name:
+    Type: String
+    Description: Name for EMR Cluster 2
+  EMRClusterInstanceType:
+    Type: String
+    Description: EMR cluster instance type for the EMR clusters
+  EMRCoreNodesCount:
+    Type: Number
+    Description: EMR cluster core nodes amount for the EMR clusters
+  EMRTaskNodesCount:
+    Type: Number
+    Description: EMR cluster task nodes amount for the EMR clusters
+  DBInstanceClass:
+    Type: String
+    Description: RDS instance type for the RDS Postgres instance
 
 Resources:
   S3Bucket:
