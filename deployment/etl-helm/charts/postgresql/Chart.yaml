@@ -1,0 +1,15 @@
+apiVersion: v1
+name: postgresql
+version: 0.0.1
+appVersion: 10.5
+description: Helm Chart for PostgreSQL, an object-relational database management system (ORDBMS) with an emphasis on extensibility and on standards-compliance.
+keywords:
+  - postgresql
+  - postgres
+  - database
+  - sql
+  - replication
+  - cluster
+home: https://www.postgresql.org/
+maintainers: []
+engine: gotpl

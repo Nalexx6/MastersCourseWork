@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "postgresql.fullname" . }}
+spec:
+  ports:
+    - port: {{ .Values.servicePort }}
+      name: postgresql
+      targetPort: postgresql
+  selector:
+    app: {{ template "postgresql.fullname" . }}

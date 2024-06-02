@@ -1,0 +1,105 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: {{ template "postgresql.fullname" . }}
+  labels:
+    app: {{ template "postgresql.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceName: {{ template "postgresql.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "postgresql.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "postgresql.fullname" . }}
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.user }}
+        runAsGroup: {{ .Values.group }}
+        fsGroup: {{ .Values.group }}
+      volumes:
+        - name: {{ template "postgresql.fullname" . }}
+          persistentVolumeClaim:
+            claimName: {{ template "postgresql.fullname" . }}
+        {{- if  or (.Files.Glob "files/docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
+        - name: custom-init-scripts
+          configMap:
+            name: {{ template "postgresql.initdbScriptsCM" . }}
+        {{- end }}
+        - name: {{ template "postgresql.fullname" . }}-config
+          configMap:
+            name: {{ template "postgresql.fullname" . }}-config
+            items:
+              - key: "pg_hba"
+                path: "pg_hba.conf"
+              - key: "postgres"
+                path: "postgresql.conf"
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: {{ .Values.component }}
+          image: {{ template "postgresql.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [ "-c", "max_connections={{ .Values.max_connections }}", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: {{ .Values.secrets.secretKey }}
+            {{- with .Values.extraEnv }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: postgresql
+              containerPort: {{ .Values.servicePort }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                {{- if (include "postgresql.database" .) }}
+                - exec pg_isready -U {{ include "postgresql.username" . | quote }} -d {{ (include "postgresql.database" .) | quote }} -h 127.0.0.1 -p {{ .Values.servicePort }}
+                {{- else }}
+                - exec pg_isready -U {{ include "postgresql.username" . | quote }} -h 127.0.0.1 -p {{ .Values.servicePort }}
+                {{- end }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                {{- include "postgresql.readinessProbeCommand" . | nindent 16 }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ template "postgresql.fullname" . }}
+              mountPath: /var/lib/postgresql/data
+              subPath: data
+            {{- if or (.Files.Glob "files/docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
+            - name: custom-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/
+            {{- end }}
+            - name: {{ template "postgresql.fullname" . }}-config
+              mountPath: /etc/postgresql
+          resources:
+            {{- with .Values.resources.requests }}
+            requests:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
