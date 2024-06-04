@@ -5,9 +5,9 @@ type: application
 version: 0.1.1
 appVersion: 0.1.0
 dependencies:
-  - name: spark
-    version: "9.0.4"
-    repository: oci://registry-1.docker.io/bitnamicharts
+  - name: spark-operator
+    version: "1.2.14"
+    repository: https://kubeflow.github.io/spark-operator
     condition: spark.enabled
   - name: airflow
     version: "0.0.1"

@@ -19,9 +19,9 @@ class Writer:
         output_table = os.path.join(config['root'], config['output_table'])
 
         df = utils.add_date_cols((df.where(df.value.isNotNull())
-                .select(fn.from_json(fn.col("value").cast("string"), self.config['schema']).alias("value"))
-                .select('value.*')
-                ))
+                                  .select(fn.from_json(fn.col("value").cast("string"), self.config['schema']).alias("value"))
+                                  .select('value.*')
+                                  ))
 
         (df.write.partitionBy(config['partition_key'])
             .mode('append')

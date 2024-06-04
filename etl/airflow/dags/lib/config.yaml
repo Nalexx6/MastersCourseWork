@@ -3,14 +3,14 @@ kafka_brokers:
 topics:
   - data-topic
 
-root: nalexx-bucket/data/storage
-checkpoint_location: nalexx-bucket/data/checkpoint
+root: s3a://etl-coursework/data/storage
+checkpoint_location: s3a://etl-coursework/data/checkpoint
 
+output_table: test_sample.parquet
 licences_table: licenses.csv
 zones_table: zones.csv
 
 partition_key: hvfhs_license_num
-#schema:
 
 schema:  
   - field_name: hvfhs_license_num

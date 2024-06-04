@@ -40,7 +40,8 @@ if __name__ == "__main__":
     # topic_list.append(NewTopic(name="nyc-taxi-topic", num_partitions=1, replication_factor=1))
     # admin_client.create_topics(new_topics=topic_list, validate_only=False)
 
-    df = utils.read_df(spark, './fhvhv_tripdata_2023-01.parquet', '')
+    df = utils.read_df(spark, './fhvhv_tripdata_2024-03.parquet', '').limit(20)
+    # df.show(20)
     df = df.collect()
 
     for batch in chunker(df, 10):

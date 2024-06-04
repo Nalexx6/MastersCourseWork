@@ -1,5 +1,6 @@
 airflow:
   enabled: true
+# if deployed to EKS
 #  serviceAccount:
 #    name: "aws-access-sa"
 #    create: False
@@ -24,17 +25,9 @@ airflow:
       AIRFLOW__KUBERNETES_EXECUTOR__DELETE_WORKER_PODS: "True"
       AIRFLOW__CORE__DAG_RUN_CONF_OVERRIDES_PARAMS: "True"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
-      AIRFLOW__CORE__BASE_LOG_FOLDER: "s3:///etl-coursework/logs/"
       AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "False"
       AIRFLOW__KUBERNETES__RUN_AS_USER: "50000"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN_CMD: "bash -c 'eval \"$DATABASE_SQLALCHEMY_CMD\"'"
-#      AIRFLOW__CORE__REMOTE_LOGGING: "True"
-#      AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER: "s3://etl-coursework/airflow/logs/"
-#    env:
-#      - name: AWS_ACCESS_KEY_ID
-#        value: "AKIAXWC76IGT4TRIDFUP"
-#      - name: AWS_SECRET_ACCESS_KEY
-#        value: "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"
     extraEnv:
       - name: PIPELINES_S3_PATH
         value: "s3://etl-coursework/airflow/pipelines"
@@ -44,6 +37,11 @@ airflow:
         value: "etl-coursework"
       - name: AIRFLOW__API__AUTH_BACKENDS
         value: 'airflow.api.auth.backend.basic_auth'
+      - name: AWS_ACCESS_KEY_ID
+        value: <your-key>
+      - name: AWS_SECRET_ACCESS_KEY
+        value: <your-secret-key>
+
     extraVolumes:
       - name: secrets
         secret:
@@ -128,7 +126,6 @@ airflow:
   dags:
     persistence:
         enabled: true
-#        storageClass: "-"
     s3Sync:
       enabled: True
       regular: False
@@ -195,7 +192,6 @@ kafka:
       enabled: false
       kafkaJmxPort: 5555
 
-
 postgresql:
   enabled: true
   extraEnv:
@@ -224,6 +220,8 @@ postgresql:
       psql --username postgres -c "CREATE DATABASE airflow_db;"
       psql --username postgres -c "GRANT ALL PRIVILEGES ON DATABASE airflow_db to airflow;"
       psql --username postgres -d airflow_db -c "CREATE EXTENSION pg_stat_statements;"
+      echo "-- DATA DB INITIALIZATION --"
+      psql --username postgres -c "CREATE DATABASE test;"
       echo "SETTING UP PB HBA CONF"
       mv /var/lib/postgresql/data/pgdata/pg_hba.conf /var/lib/postgresql/data/pgdata/pg_hba.conf.bak
       echo "local all postgres trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
@@ -240,3 +238,30 @@ postgresql:
       echo "host all all ::0/0 md5" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
       echo "Reload pg config"
       psql --username postgres -d postgres -c "SELECT pg_reload_conf();"
+      
+
+spark:
+  enabled: true
+
+  serviceAccounts:
+    spark:
+      # -- Create a service account for spark apps
+      create: false
+      # -- Optional name for the spark service account
+      name: ""
+      # -- Optional annotations for the spark service account
+      annotations: { }
+    sparkoperator:
+      # -- Create a service account for the operator
+      create: false
+      # -- Optional name for the operator service account
+      name: ""
+      # -- Optional annotations for the operator service account
+      annotations: { }
+
+  webhook:
+    # -- Enable webhook server
+    enable: true
+
+metabase:
+  enabled: true
