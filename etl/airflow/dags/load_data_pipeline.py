@@ -22,14 +22,14 @@ default_args = {
     'retry_delay': timedelta(minutes=1)
 }
 
-with DAG(dag_id="update_metrics",
+with DAG(dag_id="load_data",
          default_args=default_args,
          schedule_interval=None,
          catchup=False,
          is_paused_upon_creation=False,
          tags=None) as dag:
     update_metrics = SparkKubernetesOperator(
-        task_id='collect_data_step',
+        task_id='load_data_step',
         namespace="default",
         application_file="load_data_step.yaml",
         kubernetes_conn_id="kubernetes_in_cluster",

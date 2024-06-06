@@ -22,7 +22,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1)
 }
 
-with DAG(dag_id="update_metrics",
+with DAG(dag_id="simulate_data",
          default_args=default_args,
          schedule_interval=None,
          catchup=False,
