@@ -1,0 +1,267 @@
+airflow:
+  enabled: true
+# if deployed to EKS
+#  serviceAccount:
+#    name: "aws-access-sa"
+#    create: False
+
+  postgresql:
+    enabled: false
+
+  externalDatabase:
+    type: postgres
+    host: "etl-helm-postgresql"
+    port: 5432
+    database: airflow_db
+    user: airflow
+    passwordSecret: "airflow-secrets"
+    passwordSecretKey: "airflow_postgres_password"
+
+  airflow:
+    image:
+      tag: 2.6.3-python3.9
+    executor: KubernetesExecutor
+    config:
+      AIRFLOW__KUBERNETES_EXECUTOR__DELETE_WORKER_PODS: "True"
+      AIRFLOW__CORE__DAG_RUN_CONF_OVERRIDES_PARAMS: "True"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+      AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "False"
+      AIRFLOW__KUBERNETES__RUN_AS_USER: "50000"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN_CMD: "bash -c 'eval \"$DATABASE_SQLALCHEMY_CMD\"'"
+    extraEnv:
+      - name: PIPELINES_S3_PATH
+        value: "s3://etl-coursework/airflow/pipelines"
+      - name: ENVIRONMENT
+        value: "DEV"
+      - name: AIRFLOW_S3_BUCKET_NAME
+        value: "etl-coursework"
+      - name: AIRFLOW__API__AUTH_BACKENDS
+        value: 'airflow.api.auth.backend.basic_auth'
+      - name: AWS_ACCESS_KEY_ID
+        value: <your-key>
+      - name: AWS_SECRET_ACCESS_KEY
+        value: <your-secret-key>
+
+    extraVolumes:
+      - name: secrets
+        secret:
+          secretName: airflow-secrets
+          defaultMode: 493
+    extraVolumeMounts:
+      - name: secrets
+        readOnly: true
+        mountPath: /home/airflow/secrets
+    kubernetesPodTemplate:
+      runAsUser: "50000"
+      spec:
+        restartPolicy: Never
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    kubernetes_executor: "True"
+      resources:
+        limits:
+          cpu: "1"
+          ephemeral-storage: "2Gi"
+          memory: "1Gi"
+        requests:
+          cpu: "250m"
+          ephemeral-storage: "1Gi"
+          memory: "1Gi"
+  scheduler:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "500m"
+        ephemeral-storage: "1Gi"
+        memory: 1Gi
+      limits:
+        cpu: 1
+        ephemeral-storage: "2Gi"
+        memory: 2Gi
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      timeoutSeconds: 30
+      failureThreshold: 30
+      periodSeconds: 60
+  web:
+    replicas: 1
+    service:
+      annotations: {}
+      sessionAffinity: "None"
+      sessionAffinityConfig: {}
+      type: ClusterIP
+      port:
+        name: web
+        number: 8080
+      loadBalancerIP: ""
+      loadBalancerSourceRanges: []
+      nodePort:
+        http: ""
+    resources:
+      limits:
+        cpu: "1"
+        ephemeral-storage: "2Gi"
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        ephemeral-storage: "1Gi"
+        memory: "1Gi"
+    readinessProbe:
+      enabled: false
+    livenessProbe:
+      periodSeconds: 300
+      timeoutSeconds: 10
+      failureThreshold: 5
+  workers:
+    enabled: False
+  flower:
+    enabled: False
+  dags:
+    persistence:
+        enabled: true
+    s3Sync:
+      enabled: True
+      regular: False
+      bucketName: etl-coursework
+      keyPath: airflow/dags
+    gitSync:
+      enabled: False
+  logs:
+    persistence:
+      enabled: False
+  redis:
+    enabled: false
+
+kafka:
+  enabled: false
+  service:
+    ports:
+      client: 9092
+      controller: 9093
+      interbroker: 9094
+      external: 9095
+  controller:
+    resources:
+      limits:
+        cpu: 400m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 0.5Gi
+    controllerOnly: false
+    replicaCount: 1
+    heapOpts: -Xmx512m -Xms512m
+    persistence:
+      mountPath: /bitnami/kafka
+    logPersistence:
+      mountPath: /opt/bitnami/kafka/logs
+  kraft:
+    enabled: true
+  zookeeper:
+    enabled: false
+    replicaCount: 1
+  broker:
+    resources:
+      limits:
+        cpu: 400m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 0.5Gi
+    replicaCount: 0
+    podLabels: {}
+    podAnnotations: {}
+    heapOpts: -Xmx512m -Xms512m
+    persistence:
+      mountPath: /bitnami/kafka
+    logPersistence:
+      mountPath: /opt/bitnami/kafka/logs
+  externalAccess:
+    autoDiscovery:
+      image:
+        pullPolicy: IfNotPresent
+  metrics:
+    jmx:
+      enabled: false
+      kafkaJmxPort: 5555
+
+postgresql:
+  enabled: true
+  extraEnv:
+    - name: AIRFLOW_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secrets
+          key: airflow_postgres_password
+  resources:
+    limits:
+      cpu: "1"
+      ephemeral-storage: "2Gi"
+      memory: "1Gi"
+    requests:
+      cpu: "500m"
+      ephemeral-storage: "1Gi"
+      memory: "1Gi"
+
+  # TODO: should we extract users and tables to config as well?
+  initdbScripts:
+    0-init.sh: |
+      #!/bin/sh
+      echo "shared_preload_libraries = 'pg_stat_statements'" >> /var/lib/postgresql/data/pgdata/postgresql.conf
+      echo "-- AIRFLOW DB INITIALIZATION --"
+      psql --username postgres -c "CREATE USER airflow WITH PASSWORD '${AIRFLOW_PASSWORD}';"
+      psql --username postgres -c "CREATE DATABASE airflow_db;"
+      psql --username postgres -c "GRANT ALL PRIVILEGES ON DATABASE airflow_db to airflow;"
+      psql --username postgres -d airflow_db -c "CREATE EXTENSION pg_stat_statements;"
+      echo "-- DATA DB INITIALIZATION --"
+      psql --username postgres -c "CREATE DATABASE test;"
+      echo "SETTING UP PB HBA CONF"
+      mv /var/lib/postgresql/data/pgdata/pg_hba.conf /var/lib/postgresql/data/pgdata/pg_hba.conf.bak
+      echo "local all postgres trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host all postgres 127.0.0.1/32 trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "local airflow_db airflow trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host airflow_db airflow 127.0.0.1/32 trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "local metastore_db metastore trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host metastore_db metastore 127.0.0.1/32 trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "local monitoring_service_db monitoring_service trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host monitoring_service_db monitoring_service 127.0.0.1/32 trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "local uploader_service_db uploader_service trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host uploader_service_db uploader_service 127.0.0.1/32 trust" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "host all all ::0/0 md5" >> /var/lib/postgresql/data/pgdata/pg_hba.conf
+      echo "Reload pg config"
+      psql --username postgres -d postgres -c "SELECT pg_reload_conf();"
+      
+
+spark:
+  enabled: true
+
+  serviceAccounts:
+    spark:
+      # -- Create a service account for spark apps
+      create: false
+      # -- Optional name for the spark service account
+      name: ""
+      # -- Optional annotations for the spark service account
+      annotations: { }
+    sparkoperator:
+      # -- Create a service account for the operator
+      create: false
+      # -- Optional name for the operator service account
+      name: ""
+      # -- Optional annotations for the operator service account
+      annotations: { }
+
+  webhook:
+    # -- Enable webhook server
+    enable: true
+
+metabase:
+  enabled: true

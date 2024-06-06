@@ -1,0 +1,87 @@
+kafka_brokers:
+  - localhost:9092
+topics:
+  - data-topic
+
+root: s3a://etl-coursework/data/storage
+checkpoint_location: s3a://etl-coursework/data/checkpoint
+
+input_table: test_sample.parquet
+output_table: trips_data.parquet
+licences_table: licenses.csv
+zones_table: zones.csv
+
+partition_key: hvfhs_license_num
+
+schema:  
+  - field_name: hvfhs_license_num
+    type: str
+
+  - field_name: dispatching_base_num
+    type: str
+
+  - field_name: originating_base_num
+    type: str
+
+  - field_name: request_datetime
+    type: date
+
+  - field_name: on_scene_datetime
+    type: date
+
+  - field_name: pickup_datetime
+    type: date
+
+  - field_name: dropoff_datetime
+    type: date
+
+  - field_name: PULocationID
+    type: int
+
+  - field_name: DOLocationID
+    type: int
+
+  - field_name: trip_miles
+    type: decimal
+
+  - field_name: trip_time
+    type: int
+
+  - field_name: base_passenger_fare
+    type: decimal
+
+  - field_name: tolls
+    type: decimal
+
+  - field_name: bcf
+    type: decimal
+
+  - field_name: sales_tax
+    type: decimal
+
+  - field_name: congestion_surcharge
+    type: decimal
+
+  - field_name: airport_fee
+    type: decimal
+
+  - field_name: tips
+    type: decimal
+
+  - field_name: driver_pay
+    type: decimal
+
+  - field_name: shared_request_flag
+    type: str
+
+  - field_name: shared_match_flag
+    type: str
+
+  - field_name: access_a_ride_flag
+    type: str
+
+  - field_name: wav_request_flag
+    type: str
+
+  - field_name: wav_match_flag
+    type: str

@@ -1,0 +1,27 @@
+apiVersion: v2
+name: etl-helm
+description: A Helm chart for deploying the platform
+type: application
+version: 0.1.1
+appVersion: 0.1.0
+dependencies:
+  - name: spark-operator
+    version: "1.2.14"
+    repository: https://kubeflow.github.io/spark-operator
+    condition: spark.enabled
+  - name: airflow
+    version: "0.0.1"
+    repository: file://charts/airflow
+    condition: airflow.enabled
+  - name: kafka
+    version: "26.4.0"
+    repository: oci://registry-1.docker.io/bitnamicharts
+    condition: kafka.enabled
+  - name: postgresql
+    version: "0.0.1"
+    repository: file://charts/postgresql
+    condition: postgresql.enabled
+  - name: metabase
+    version: "2.15.6"
+    repository: https://pmint93.github.io/helm-charts
+    condition: metabase.enabled
