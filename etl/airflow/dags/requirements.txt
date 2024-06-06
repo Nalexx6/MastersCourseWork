@@ -5,6 +5,8 @@
 
 pandas
 fastparquet
-pyspark==3.2.1
+pyspark==3.4.0
 boto3
-yaml
+pyyaml
+pymongo
+kafka-python

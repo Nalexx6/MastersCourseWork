@@ -16,14 +16,14 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: update-metrics-step-{{ ts_nodash | lower }}
+  name: collect-data-step-{{ ts_nodash | lower }}
   namespace: default
 spec:
   type: Python
   mode: cluster
   image: "nalexx06/spark-test:0.8"
   imagePullPolicy: Always
-  mainApplicationFile: "local:///opt/spark/dags/lib/batch.py"
+  mainApplicationFile: "local:///opt/spark/dags/lib/streaming.py"
   sparkVersion: "3.4.0"
   sparkUIOptions:
     serviceLabels:
@@ -31,10 +31,6 @@ spec:
   arguments:
       - "--config"
       - "/opt/spark/dags/lib/config.yaml"
-      - "--db-url"
-      - "http://etl-postgres.default.svc.cluster.local"
-      - "--db-pass"
-      - "postgres"
   restartPolicy:
     type: Never
   volumes:

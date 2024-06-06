@@ -6,7 +6,8 @@ topics:
 root: s3a://etl-coursework/data/storage
 checkpoint_location: s3a://etl-coursework/data/checkpoint
 
-output_table: test_sample.parquet
+input_table: test_sample.parquet
+output_table: trips_data.parquet
 licences_table: licenses.csv
 zones_table: zones.csv
 
